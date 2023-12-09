@@ -1,3 +1,5 @@
 https://medium.com/@eskandar.sahel/exploring-feature-extraction-techniques-for-natural-language-processing-46052ee6514
 https://medium.com/@bedigunjit/simple-guide-to-text-classification-nlp-using-svm-and-naive-bayes-with-python-421db3a72d34
 https://moj-analytical-services.github.io/NLP-guidance/FeatureSelection.html
+https://www.datacamp.com/tutorial/naive-bayes-scikit-learn
+https://medium.com/@ishan.cdixit/pythons-natural-language-tool-kit-nltk-tutorial-part-3-84a8bcb089bd
