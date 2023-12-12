@@ -12,7 +12,7 @@ from nltk.probability import FreqDist
 nltk.download("wordnet")
 nltk.download('stopwords')
 	
-def remove_single_and_emoty_char(words: List[str]):
+def remove_single_and_empty_char(words: List[str]):
 	single_character_pattern = r'^[\w]{1}$'
 	empty_string_pattern = r'^$'
 	for word in words:
@@ -40,8 +40,8 @@ def pre_process(filename, assigned_class):
 	for line_number in range(0, len(lines), 2):
 		header_words = re.split(pattern, lines[line_number])
 		text_words = re.split(pattern, lines[line_number + 1])
-		remove_single_and_emoty_char(header_words)
-		remove_single_and_emoty_char(text_words)
+		remove_single_and_empty_char(header_words)
+		remove_single_and_empty_char(text_words)
 		document = []
 		document.extend(sanitize_tokens(header_words, stemmer, lemmatizer))
 		document.extend(sanitize_tokens(text_words, stemmer, lemmatizer))
