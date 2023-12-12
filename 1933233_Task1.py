@@ -7,6 +7,7 @@ from sklearn.svm import SVC
 import json
 import os
 from sklearn import metrics
+from nltk.probability import FreqDist
 
 nltk.download("wordnet")
 nltk.download('stopwords')
@@ -44,18 +45,18 @@ def pre_process(filename, assigned_class):
 		document = []
 		document.extend(sanitize_tokens(header_words, stemmer, lemmatizer))
 		document.extend(sanitize_tokens(text_words, stemmer, lemmatizer))
-		documents.append({word: True for word in document})
+		documents.append(FreqDist(document))
 	
 	return list(zip(documents, [assigned_class for document in documents]))
 
 def check_if_file_exists(filename):
 	return os.path.isfile(filename)
 
-def create_megadoc(env):
+def create_megadoc(env: str, clean_run: bool):
 	# Read and saves megadoc
 	megadoc_filename = "megadoc_" + env + ".txt"
 	training_megadoc = []
-	if not check_if_file_exists(megadoc_filename):
+	if not check_if_file_exists(megadoc_filename) or clean_run:
 		genres = ["philosophy","sports","mystery","religion","science","romance","horror","science-fiction"]
 		training_documents = [genre + "_" + env + ".txt" for genre in genres]
 		dir_name = "task1/" + env + "/"
@@ -72,19 +73,49 @@ def create_megadoc(env):
 	
 	return training_megadoc
 
-def extract_features(megadoc):		# megadoc can be either training_megadoc for training phase or test_megadoc for testing phase.
-	print("extractFeatures")
-	return megadoc
-	####################################################################################################################
-	#																												   #	
-	#		TO DO: Select features and create feature-based representations of labeled documents.                      #
-	#																												   #
-	####################################################################################################################
+def extract_features(megadoc):
+	# Bag of words -> filter most occurrent ones as feature set
+	word_numbers = {}
+	for doc in megadoc:
+		words = doc[0]
+		label = doc[1]
+		for word in words:
+			if word_numbers.get(label):
+				if word_numbers.get(label).get(word):
+					word_numbers[label][word] += words[word]
+				else:
+					word_numbers[label][word] = words[word]
+			else:
+				word_numbers[label] = {}
+				word_numbers[label][word] = words[word]
 
+	filtered_dict = {}
+	threshold = 20	 	# Filter % of dict
+
+	for label in word_numbers:
+		words = word_numbers[label]
+		sorted_words = {k: v for k, v in sorted(words.items(), key=lambda item: item[1], reverse=True)}
+		total_length = len(sorted_words)
+		filtered_dict[label] = {}
+		for (index, word) in enumerate(sorted_words):
+			if index < total_length / threshold:
+				filtered_dict[label][word] = sorted_words[word]
+			else:
+				continue
+
+	for item in megadoc:
+		word_doc = item[0]
+		label = item[1]
+		for word in list(word_doc):
+			if word not in filtered_dict[label]:
+				del word_doc[word]
+
+
+	
+	return megadoc
 
 def train(classifier, training_set):
 	return classifier.train(training_set)
-	
 
 def test(classifier, test_set):
 	y_true = [label for (_, label) in test_set]
@@ -121,11 +152,11 @@ def load_classifier(filename: str):
 	else:
 		return False
 	
-def getClassifier(classifier_name: str, training_set, env: str):
+def get_classifier(classifier_name: str, training_set, env: str, clean_run: bool):
 	filename = classifier_name + "_" + env
 	if classifier_name == "naive":
 		naive_bayes_classifier = load_classifier(filename)
-		if not naive_bayes_classifier:
+		if not naive_bayes_classifier or clean_run:
 			naive_bayes_classifier = nltk.NaiveBayesClassifier
 			trained_naive_bayes_classifier = train(naive_bayes_classifier, training_set)
 			save_classifier(trained_naive_bayes_classifier, filename)
@@ -134,7 +165,7 @@ def getClassifier(classifier_name: str, training_set, env: str):
 			return trained_naive_bayes_classifier
 	elif classifier_name == "svc":
 		svc_classifier = load_classifier(filename)
-		if not svc_classifier:
+		if not svc_classifier or clean_run:
 			svc_classifier = nltk.classify.SklearnClassifier(SVC())
 			train(svc_classifier, training_set)
 			save_classifier(svc_classifier, filename)
@@ -146,27 +177,21 @@ def getClassifier(classifier_name: str, training_set, env: str):
 
 if __name__ == "__main__":
 	stop_words = set(stopwords.words("english"))
-	env = "train" # train or dev
-	training_set = create_megadoc(env)
-	test_set = create_megadoc("test")
+	env = "train" 			# train or dev
+	clean_run = True 		# if true don't reads existing outputs
+
+	training_set = create_megadoc(env, clean_run)
+	test_set = create_megadoc("test", clean_run)
 
 	training_set = extract_features(training_set)
 	test_set = extract_features(test_set)
 
-	naive_classifier = getClassifier("naive", training_set, env)
-	svc_classifier = getClassifier("svc", training_set, env)
+	naive_classifier = get_classifier("naive", training_set, env, clean_run)
+	svc_classifier = get_classifier("svc", training_set, env, clean_run)
 
 	print("Naive Bayes:")
 	test(naive_classifier, test_set)
 
 	print("Support Vector Classifier:")
 	test(svc_classifier, test_set)
-
-
-
-
-
-
-
-
 
