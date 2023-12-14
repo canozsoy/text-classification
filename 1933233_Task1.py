@@ -137,7 +137,7 @@ def test(classifier, test_set):
 	print("F1-Score:", f1Score)
 
 	print("\Confusion Matrix:")
-	print(metrics.confusion_matrix(y_true, y_pred))
+	print(metrics.confusion_matrix(y_true, y_pred, labels=labels))
 
 
 def save_classifier(classifier, filename: str):
