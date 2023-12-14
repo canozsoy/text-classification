@@ -3,3 +3,4 @@ https://medium.com/@bedigunjit/simple-guide-to-text-classification-nlp-using-svm
 https://moj-analytical-services.github.io/NLP-guidance/FeatureSelection.html
 https://www.datacamp.com/tutorial/naive-bayes-scikit-learn
 https://medium.com/@ishan.cdixit/pythons-natural-language-tool-kit-nltk-tutorial-part-3-84a8bcb089bd
+https://cetinsamet.medium.com/part-of-speech-pos-tagging-8af646a3d5bb
