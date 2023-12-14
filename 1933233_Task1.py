@@ -121,16 +121,19 @@ def test(classifier, test_set):
 	y_true = [label for (_, label) in test_set]
 	y_pred = [classifier.classify(features) for (features, _) in test_set]
 
+	average = "macro"
+	labels = None #["philosophy","sports","mystery","religion","science","romance","horror","science-fiction"]
+
 	accuracy = metrics.accuracy_score(y_true, y_pred)
 	print("Accuracy:", accuracy)	
 
-	recall = metrics.recall_score(y_true, y_pred, average="micro")
+	recall = metrics.recall_score(y_true, y_pred, average=average, labels=labels)
 	print("Recall:", recall)
 
-	precision = metrics.precision_score(y_true, y_pred, average="micro")
+	precision = metrics.precision_score(y_true, y_pred, average=average, labels=labels)
 	print("Precision:", precision)
 
-	f1Score = metrics.f1_score(y_true, y_pred, average="micro")
+	f1Score = metrics.f1_score(y_true, y_pred, average=average, labels=labels)
 	print("F1-Score:", f1Score)
 
 	print("\Confusion Matrix:")
@@ -162,7 +165,7 @@ def get_classifier(classifier_name: str, training_set, env: str, clean_run: bool
 			save_classifier(trained_naive_bayes_classifier, filename)
 			return trained_naive_bayes_classifier
 		else:
-			return trained_naive_bayes_classifier
+			return naive_bayes_classifier
 	elif classifier_name == "svc":
 		svc_classifier = load_classifier(filename)
 		if not svc_classifier or clean_run:
@@ -178,7 +181,7 @@ def get_classifier(classifier_name: str, training_set, env: str, clean_run: bool
 if __name__ == "__main__":
 	stop_words = set(stopwords.words("english"))
 	env = "train" 			# train or dev
-	clean_run = True 		# if true don't reads existing outputs
+	clean_run = False 		# if true don't reads existing outputs
 
 	training_set = create_megadoc(env, clean_run)
 	test_set = create_megadoc("test", clean_run)
