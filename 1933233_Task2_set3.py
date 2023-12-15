@@ -47,10 +47,11 @@ def creatdict(sentence,index,pos):	#pos=="" <-> featuresofword  else, relative p
 	wordlow=word.lower()
 	dict={
 		"wrd"+pos:wordlow,								# the token itself
-		"cap"+pos:word[0].isupper(),					# starts with capital?
-		"allcap"+pos:word.isupper(),					# is all capitals?
-		"caps_inside"+pos:word==wordlow,				# has capitals inside?
-		"nums?"+pos:any(i.isdigit() for i in word),		# has digits?
+		"prev_word" + pos: '<start>' if index == 0 else (sentence[index - 1]).lower(),				# previous pos tag
+		"next_word" + pos: '<end>' if index == len(sentence) - 1 else (sentence[index + 1]).lower(),   # next pos tag
+		"word_length" + pos: len(wordlow),
+		"prefix" + pos: wordlow[0],
+		"suffix" + pos: wordlow[-1]
 	}	
 	return dict
 	
@@ -199,7 +200,7 @@ def tag(sentence):
 if __name__ == "__main__":
 
 	classifier=sklearn_crfsuite.CRF(c1=0.2, c2=0.2, max_iterations=1000)
-	training_data, test_data=creatsets("en-ud-train.conllu")
+	training_data, test_data=creatsets("task2/en-ud-train.conllu")
 	
 	
 	with open('pos_crf_train.data', 'rb') as file:

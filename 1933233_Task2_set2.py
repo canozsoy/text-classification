@@ -42,21 +42,24 @@ def formatdata(formatted_sentences,formatted_labels,file_name):
 
 	
 
-def creatdict(sentence,index,pos):	#pos=="" <-> featuresofword  else, relative pos (str) is pos
+def creatdict(sentence,index,pos,labels):	#pos=="" <-> featuresofword  else, relative pos (str) is pos
 	word=sentence[index]
 	wordlow=word.lower()
 	dict={
 		"wrd"+pos:wordlow,								# the token itself
-		"cap"+pos:word[0].isupper(),					# starts with capital?
-		"allcap"+pos:word.isupper(),					# is all capitals?
-		"caps_inside"+pos:word==wordlow,				# has capitals inside?
-		"nums?"+pos:any(i.isdigit() for i in word),		# has digits?
-	}	
+	}
+
+	if len(labels) != 0:
+		dict["current_pos" + pos]  = labels[index] 												# current pos tag
+		dict["prev_pos" + pos] = '<start>' if index == 0 else labels[index - 1]					# previous pos tag
+		dict["next_pos" + pos] = '<end>' if index == len(sentence) - 1 else labels[index + 1]   # next pos tag
+
+
 	return dict
 	
 
-def feature_extractor(sentence,index):
-	features=creatdict(sentence,index,"")
+def feature_extractor(sentence,index, labels):
+	features=creatdict(sentence,index,"", labels)
 
 	return features
 
@@ -79,7 +82,7 @@ def creatsets(file_name):
 	for i in range(0,len(sentences)):
 		features.append([])
 		for j in range(0,len(sentences[i])):
-			features[-1].append(feature_extractor(sentences[i],j))
+			features[-1].append(feature_extractor(sentences[i],j,labels[i]))
 			
 	del sentences[:]
 	del sentences
@@ -181,7 +184,7 @@ def tag(sentence):
 	classifier=load("pos_crf.pickle")
 	t_features=[]
 	for j in range(0,len(sentence)):	
-		t_features.append(feature_extractor(sentence,j))
+		t_features.append(feature_extractor(sentence,j, []))
 		
 	#print(sentence)
 	#print(len(t_features))	
@@ -199,7 +202,7 @@ def tag(sentence):
 if __name__ == "__main__":
 
 	classifier=sklearn_crfsuite.CRF(c1=0.2, c2=0.2, max_iterations=1000)
-	training_data, test_data=creatsets("en-ud-train.conllu")
+	training_data, test_data=creatsets("task2/en-ud-train.conllu")
 	
 	
 	with open('pos_crf_train.data', 'rb') as file:
